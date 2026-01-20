@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Jewelry Lead Finder</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <header class="header">
+      <h1>Jewelry Lead Finder</h1>
+      <div class="search-row">
+        <select id="search-mode">
+          <option value="near">Near me</option>
+          <option value="query">ZIP / Town / City</option>
+        </select>
+        <input id="query-input" placeholder="Enter ZIP, town or city" />
+        <button id="search-btn">Search</button>
+      </div>
+    </header>
+
+    <main class="main">
+      <section id="results" class="results">
+        <h2>Results</h2>
+        <div id="places-list"></div>
+      </section>
+
+      <section id="map" class="map"></section>
+    </main>
+
+    <footer class="footer">
+      <small>Tip: Restrict your API key for security. See README for setup.</small>
+    </footer>
+
+    <script src="app.js" defer></script>
+    <!-- Using Leaflet for maps so the Google API key is never exposed to clients. -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-sA+e2mCwqfT6w1u6Xn1Ygk6t0Z1rVf5tw5jv+3m0h7g=" crossorigin="" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-Dv1w2N0zYpGqQYgXfVn8Qn0+0JQv3zq3r6H5g9g6QYI=" crossorigin=""></script>
+  </body>
+</html>
