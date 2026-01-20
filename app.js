@@ -10,6 +10,7 @@ function escapeHtml(str){
 }
 
 function initMap(){
+  console.log('initMap called');
   const defaultCenter = [39.8283, -98.5795];
   map = L.map('map').setView(defaultCenter, 4);
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -27,11 +28,13 @@ function clearMarkers(){
 }
 
 function doSearch(){
+  console.log('doSearch invoked');
   const mode = document.getElementById('search-mode').value;
   const query = document.getElementById('query-input').value.trim();
   if(mode === 'near'){
     if(!navigator.geolocation){ alert('Geolocation not supported by your browser'); return; }
     navigator.geolocation.getCurrentPosition(pos=>{
+      console.log('geolocation success', pos.coords);
       const loc = { lat: pos.coords.latitude, lng: pos.coords.longitude };
       map.setView([loc.lat, loc.lng], 14);
       searchNearby(loc);
@@ -39,6 +42,7 @@ function doSearch(){
   } else {
     if(!query){ alert('Please enter a ZIP, town or city'); return; }
     fetch(`/api/geocode?address=${encodeURIComponent(query)}`).then(r=>r.json()).then(data=>{
+      console.log('geocode response', data);
       if(data.status === 'OK' && data.results && data.results[0]){
         const loc = data.results[0].geometry.location;
         map.setView([loc.lat, loc.lng], 13);
@@ -51,15 +55,17 @@ function doSearch(){
 }
 
 function searchNearby(location){
+  console.log('searchNearby', location);
   clearMarkers();
   document.getElementById('places-list').innerHTML = '<p>Searching for jewelry stores…</p>';
   fetch(`/api/nearby?lat=${encodeURIComponent(location.lat)}&lng=${encodeURIComponent(location.lng)}&radius=10000&keyword=jewelry`).then(r=>r.json()).then(data=>{
+    console.log('nearby response', data);
     if(data.status !== 'OK' || !data.results || data.results.length===0){
       document.getElementById('places-list').innerHTML = '<p>No jewelry stores found.</p>';
       return;
     }
     renderPlaces(data.results);
-  }).catch(()=>{ document.getElementById('places-list').innerHTML = '<p>Search failed.</p>'; });
+  }).catch((err)=>{ console.error('nearby fetch error', err); document.getElementById('places-list').innerHTML = '<p>Search failed.</p>'; });
 }
 
 function renderPlaces(places){
