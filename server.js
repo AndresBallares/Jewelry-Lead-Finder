@@ -3,8 +3,17 @@ const express = require('express');
 const fs = require('fs');
 const path = require('path');
 
-// Use global fetch when available (Node 18+). If not, server will error unless node-fetch is installed.
-const fetcher = globalThis.fetch || null;
+// Use global fetch when available (Node 18+). If not, fall back to node-fetch (v2) for older Node.
+let fetcher = globalThis.fetch || null;
+if (!fetcher) {
+  try {
+    // node-fetch v2 supports CommonJS require
+    // eslint-disable-next-line global-require
+    fetcher = require('node-fetch');
+  } catch (e) {
+    fetcher = null;
+  }
+}
 
 const app = express();
 const PORT = process.env.PORT || 8000;
