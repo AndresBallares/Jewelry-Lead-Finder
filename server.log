@@ -1,0 +1,6 @@
+Server listening on http://localhost:8001
+2026-01-20T21:35:28.666Z HEAD /
+2026-01-20T21:35:28.675Z GET /
+2026-01-20T21:35:28.684Z GET /api/geocode?address=10001
+2026-01-20T21:37:03.214Z GET /api/nearby?lat=40.7536854&lng=-73.9991637&radius=5000&keyword=jewelry
+2026-01-20T21:37:04.021Z GET /api/details?place_id=ChIJnQClza9ZwokRQ37NEa49KoQ

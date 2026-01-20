@@ -6,7 +6,8 @@
   "scripts": {
     "start": "node server.js",
     "dev": "node server.js",
-    "setup-env": "cp .env.example .env || true"
+    "setup-env": "cp .env.example .env || true",
+    "print-nearby": "node scripts/print_nearby.js"
   },
   "keywords": [],
   "author": "",

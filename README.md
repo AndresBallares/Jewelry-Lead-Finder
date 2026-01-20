@@ -18,6 +18,35 @@ npm start
 # then open http://localhost:8000
 ```
 
+Run & Stop (background, logs)
+```bash
+# start in background (writes logs to server.log and pid to server.pid)
+nohup env PORT=8001 node server.js > server.log 2>&1 & echo $! > server.pid
+
+# check process and listening port
+ps -p $(cat server.pid) -o pid,cmd
+lsof -n -P -iTCP:8001 -sTCP:LISTEN
+
+# view logs
+tail -n 200 server.log
+
+# stop the server
+kill $(cat server.pid) || kill -9 $(cat server.pid)
+rm server.pid
+```
+
+Quick smoke tests
+```bash
+# headers
+curl -v --max-time 10 --noproxy '*' -I http://localhost:8001
+
+# homepage snapshot
+curl -s --max-time 10 http://localhost:8001 | sed -n '1,60p'
+
+# geocode (replace with desired address)
+curl -v --max-time 15 --noproxy '*' "http://localhost:8001/api/geocode?address=10001"
+```
+
 If you prefer a static server for development, you may still use `python3 -m http.server`, but you must insert the Maps API key into `index.html` before opening the page — this is NOT recommended for committing to source control.
 
 Notes
