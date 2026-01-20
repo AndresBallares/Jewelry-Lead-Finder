@@ -19,6 +19,12 @@ const app = express();
 const PORT = process.env.PORT || 8000;
 const KEY = process.env.GOOGLE_API_KEY || '';
 
+// Simple request logger to help debugging (prints method and path)
+app.use((req, res, next) => {
+  console.log(new Date().toISOString(), req.method, req.url);
+  next();
+});
+
 if (!KEY) {
   console.warn('Warning: GOOGLE_API_KEY is not set. The server will still run but API endpoints will return errors.');
 }
