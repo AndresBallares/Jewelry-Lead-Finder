@@ -106,14 +106,36 @@ app.get('/api/photo', async (req, res) => {
   if (!requireKey(res)) return;
   const { photoreference, maxwidth = 400 } = req.query;
   if (!photoreference) return res.status(400).send('photoreference required');
+  // Photoreference values from the Places API can sometimes include
+  // newline or whitespace characters when copied or extracted. Strip
+  // all whitespace to ensure the parameter is valid for the Google API.
+  const sanitizedRef = String(photoreference).replace(/\s+/g, '');
   try {
-    const url = `https://maps.googleapis.com/maps/api/place/photo?photoreference=${encodeURIComponent(photoreference)}&maxwidth=${encodeURIComponent(maxwidth)}&key=${KEY}`;
+    const url = `https://maps.googleapis.com/maps/api/place/photo?photoreference=${encodeURIComponent(sanitizedRef)}&maxwidth=${encodeURIComponent(maxwidth)}&key=${KEY}`;
     // fetch the image and stream it
     const r = await fetcher(url);
-    if (!r.ok) return res.status(502).send('photo fetch failed');
-    res.setHeader('Content-Type', r.headers.get('content-type') || 'image/jpeg');
-    r.body.pipe(res);
+    if (!r.ok) {
+      console.error('photo fetch failed', { status: r.status, url });
+      return res.status(502).send('photo fetch failed');
+    }
+    const contentType = r.headers.get('content-type') || 'image/jpeg';
+    try {
+      const arrayBuffer = await r.arrayBuffer();
+      const buffer = Buffer.from(arrayBuffer);
+      res.setHeader('Content-Type', contentType);
+      res.setHeader('Content-Length', buffer.length);
+      res.end(buffer);
+    } catch (e) {
+      // Fallback for older fetch implementations that expose a Node stream
+      if (r.body && typeof r.body.pipe === 'function') {
+        res.setHeader('Content-Type', contentType);
+        r.body.pipe(res);
+      } else {
+        res.status(500).send('photo proxy failed');
+      }
+    }
   } catch (e) {
+    console.error('photo proxy exception', e && e.stack ? e.stack : e);
     res.status(500).send('photo proxy failed');
   }
 });
