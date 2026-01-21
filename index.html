@@ -32,6 +32,41 @@
       <small>Tip: Restrict your API key for security. See README for setup.</small>
     </footer>
 
+    <!-- Modal for place details -->
+    <div id="place-modal" class="modal">
+      <div class="modal-content">
+        <button class="modal-close" id="modal-close">&times;</button>
+        <div class="modal-header">
+          <h2 id="modal-title">Store Name</h2>
+          <div id="modal-rating"></div>
+        </div>
+        <div class="modal-body">
+          <div class="modal-photos" id="modal-photos">
+            <!-- Photos will be inserted here -->
+          </div>
+          <div class="modal-info">
+            <div class="info-section">
+              <h3>Address</h3>
+              <p id="modal-address"></p>
+            </div>
+            <div class="info-section">
+              <h3>Contact</h3>
+              <p id="modal-phone"></p>
+              <p id="modal-website"></p>
+            </div>
+            <div class="info-section">
+              <h3>Hours</h3>
+              <div id="modal-hours"></div>
+            </div>
+            <div class="modal-actions">
+              <a id="modal-directions" href="#" target="_blank" rel="noopener noreferrer" class="btn-primary">Get Directions</a>
+              <a id="modal-google-link" href="#" target="_blank" rel="noopener noreferrer" class="btn-secondary">View on Google Maps</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <script src="app.js" defer></script>
     <!-- Using Leaflet for maps so the Google API key is never exposed to clients. -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />

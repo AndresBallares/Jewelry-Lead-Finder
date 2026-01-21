@@ -90,12 +90,17 @@ function renderPlaces(places){
     const marker = L.marker([lat,lng]).addTo(map); markers.push(marker); bounds.extend([lat,lng]);
     marker.bindPopup(`<strong>${escapeHtml(place.name)}</strong><br/>${escapeHtml(place.vicinity||place.formatted_address||'')}`);
 
-    card.addEventListener('click', ()=>{ map.setView([lat,lng],15); marker.openPopup(); });
+    // Store place data for modal
+    card.placeData = place;
 
     // Fetch details from server
     fetch(`/api/details?place_id=${encodeURIComponent(place.place_id)}`).then(r=>r.json()).then(payload=>{
       const detail = payload && payload.result ? payload.result : null;
       if(!detail) return;
+      
+      // Store full details on card for modal
+      card.fullDetails = detail;
+
       if(detail.photos && detail.photos.length){
         const ref = detail.photos[0].photo_reference;
         img.src = `/api/photo?photoreference=${encodeURIComponent(ref)}&maxwidth=400`;
@@ -115,10 +120,102 @@ function renderPlaces(places){
       if(detail.website){ const w = document.createElement('a'); w.href=detail.website; w.target='_blank'; w.rel='noopener noreferrer'; w.textContent='Website'; actions.appendChild(w); }
       if(detail.url){ const g = document.createElement('a'); g.href=detail.url; g.target='_blank'; g.rel='noopener noreferrer'; g.textContent='Open in Google Maps'; actions.appendChild(g); }
     }).catch(()=>{});
+
+    // Click handler to open modal
+    card.addEventListener('click', ()=>{ 
+      openPlaceModal(card.placeData, card.fullDetails, lat, lng);
+    });
   });
 
   map.fitBounds(bounds);
 }
 
-window.addEventListener('load', ()=>{ initMap(); });
+function openPlaceModal(place, details, lat, lng){
+  const modal = document.getElementById('place-modal');
+  const title = document.getElementById('modal-title');
+  const rating = document.getElementById('modal-rating');
+  const address = document.getElementById('modal-address');
+  const phone = document.getElementById('modal-phone');
+  const website = document.getElementById('modal-website');
+  const hours = document.getElementById('modal-hours');
+  const photos = document.getElementById('modal-photos');
+  const directions = document.getElementById('modal-directions');
+  const googleLink = document.getElementById('modal-google-link');
+
+  // Set basic info
+  title.textContent = place.name || 'Store Details';
+  
+  if(details && details.rating){
+    rating.innerHTML = `<span style="color:#f59e0b;font-size:18px;">★</span> ${details.rating} ${details.user_ratings_total ? `(${details.user_ratings_total} reviews)` : ''}`;
+  } else {
+    rating.textContent = '';
+  }
+
+  address.textContent = (details && details.formatted_address) || place.vicinity || place.formatted_address || 'Address not available';
+  
+  if(details && details.formatted_phone_number){
+    phone.innerHTML = `<a href="tel:${details.formatted_phone_number.replace(/\s+/g,'')}">${escapeHtml(details.formatted_phone_number)}</a>`;
+  } else {
+    phone.textContent = 'Phone not available';
+  }
+
+  if(details && details.website){
+    website.innerHTML = `<a href="${escapeHtml(details.website)}" target="_blank" rel="noopener noreferrer">Visit Website</a>`;
+  } else {
+    website.textContent = 'Website not available';
+  }
+
+  // Hours
+  hours.innerHTML = '';
+  if(details && details.opening_hours && details.opening_hours.weekday_text){
+    details.opening_hours.weekday_text.forEach(day => {
+      const parts = day.split(': ');
+      const div = document.createElement('div');
+      div.innerHTML = `<strong>${parts[0]}</strong><span>${parts[1] || ''}</span>`;
+      hours.appendChild(div);
+    });
+  } else {
+    hours.textContent = 'Hours not available';
+  }
+
+  // Photos
+  photos.innerHTML = '';
+  const allPhotos = (details && details.photos) || (place.photos) || [];
+  if(allPhotos.length > 0){
+    allPhotos.forEach((photo, idx) => {
+      const img = document.createElement('img');
+      img.className = idx === 0 ? 'modal-photo main-photo' : 'modal-photo';
+      img.src = `/api/photo?photoreference=${encodeURIComponent(photo.photo_reference)}&maxwidth=800`;
+      img.alt = `${place.name} photo ${idx + 1}`;
+      photos.appendChild(img);
+    });
+  } else {
+    photos.innerHTML = '<p style="padding:20px;color:#888;">No photos available</p>';
+  }
+
+  // Links
+  directions.href = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`;
+  googleLink.href = (details && details.url) || `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
+
+  // Show modal
+  modal.classList.add('show');
+}
+
+function closePlaceModal(){
+  const modal = document.getElementById('place-modal');
+  modal.classList.remove('show');
+}
+
+window.addEventListener('load', ()=>{ 
+  initMap();
+  
+  // Close modal handlers
+  document.getElementById('modal-close').addEventListener('click', closePlaceModal);
+  document.getElementById('place-modal').addEventListener('click', (e) => {
+    if(e.target.id === 'place-modal') closePlaceModal();
+  });
+  document.addEventListener('keydown', (e) => {
+    if(e.key === 'Escape') closePlaceModal();
+  });
+});
 // (Removed duplicated Google Maps code; this file uses Leaflet declared above)
