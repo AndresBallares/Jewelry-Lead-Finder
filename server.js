@@ -140,17 +140,25 @@ app.get('/api/photo', async (req, res) => {
   }
 });
 
-const server = app.listen(PORT, () => {
-  console.log(`Server listening on http://localhost:${PORT}`);
-});
+let server = null;
+// In Vercel's serverless runtime, export the Express app instead of listening on a port
+// Locally (or non-Vercel environments), start the HTTP server as usual
+if (!process.env.VERCEL) {
+  server = app.listen(PORT, () => {
+    console.log(`Server listening on http://localhost:${PORT}`);
+  });
 
-// Better error reporting for common server issues (eg. EADDRINUSE)
-server.on('error', (err) => {
-  console.error('Server error:', err);
-  if (err && err.code === 'EADDRINUSE') {
-    console.error(`Port ${PORT} is already in use.`);
-  }
-});
+  // Better error reporting for common server issues (eg. EADDRINUSE)
+  server.on('error', (err) => {
+    console.error('Server error:', err);
+    if (err && err.code === 'EADDRINUSE') {
+      console.error(`Port ${PORT} is already in use.`);
+    }
+  });
+}
+
+// Export the Express app for Vercel serverless runtime
+module.exports = app;
 
 process.on('uncaughtException', (err) => {
   console.error('Uncaught exception:', err);
