@@ -39,8 +39,11 @@ app.use((req, res, next) => {
   next();
 });
 
+// Determine the root directory (works on both local and Vercel)
+const ROOT_DIR = process.cwd();
+
 // Serve static assets with proper MIME types
-app.use(express.static(path.join(__dirname), {
+app.use(express.static(ROOT_DIR, {
   setHeaders: (res, filePath) => {
     if (filePath.endsWith('.css')) {
       res.setHeader('Content-Type', 'text/css; charset=utf-8');
@@ -52,7 +55,7 @@ app.use(express.static(path.join(__dirname), {
 
 // Catch-all route to serve index.html for root and unmatched paths (for SPA routing and Vercel compatibility)
 app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'index.html'));
+  res.sendFile(path.join(ROOT_DIR, 'index.html'));
 });
 
 // Helper to call Google Places Web Services
