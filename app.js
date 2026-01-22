@@ -58,6 +58,10 @@ function searchNearby(location){
   console.log('searchNearby', location);
   clearMarkers();
   document.getElementById('places-list').innerHTML = '<p>Searching for jewelry stores…</p>';
+  const resultsTitle = document.querySelector('.results h2');
+  if (resultsTitle) {
+    resultsTitle.textContent = 'Stores';
+  }
   fetch(`/api/nearby?lat=${encodeURIComponent(location.lat)}&lng=${encodeURIComponent(location.lng)}&radius=10000&keyword=jewelry`).then(r=>r.json()).then(data=>{
     console.log('nearby response', data);
     if(data.status !== 'OK' || !data.results || data.results.length===0){
