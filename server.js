@@ -42,8 +42,12 @@ app.use((req, res, next) => {
 
 // Determine the root directory - try multiple locations for Vercel compatibility
 // Serve static CSS, JS, and other files by reading them directly (works in Vercel serverless)
-app.get(/\.(css|js|json)$/, (req, res, next) => {
-  const filePath = path.join(__dirname, req.path);
+app.get(/\.(css|js|json|html)$|^\/[^.]*$/, (req, res, next) => {
+  // Try public directory first, then root directory
+  let filePath = path.join(__dirname, 'public', req.path);
+  if (!fs.existsSync(filePath)) {
+    filePath = path.join(__dirname, req.path);
+  }
   
   // Security: prevent directory traversal
   const normalized = path.normalize(filePath);
@@ -63,6 +67,8 @@ app.get(/\.(css|js|json)$/, (req, res, next) => {
     res.setHeader('Content-Type', 'application/javascript; charset=utf-8');
   } else if (req.path.endsWith('.json')) {
     res.setHeader('Content-Type', 'application/json');
+  } else if (req.path.endsWith('.html') || req.path === '/') {
+    res.setHeader('Content-Type', 'text/html; charset=utf-8');
   }
   
   res.sendFile(filePath);
@@ -70,7 +76,7 @@ app.get(/\.(css|js|json)$/, (req, res, next) => {
 
 // Catch-all route to serve index.html for root and unmatched paths
 app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'index.html'));
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
 // Helper to call Google Places Web Services
