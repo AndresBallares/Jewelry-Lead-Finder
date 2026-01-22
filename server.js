@@ -42,6 +42,11 @@ app.use((req, res, next) => {
 // Serve static assets
 app.use(express.static(path.join(__dirname)));
 
+// Catch-all route to serve index.html for root and unmatched paths (for SPA routing and Vercel compatibility)
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'index.html'));
+});
+
 // Helper to call Google Places Web Services
 function requireKey(res) {
   if (!KEY) {
