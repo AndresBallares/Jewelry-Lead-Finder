@@ -39,23 +39,38 @@ app.use((req, res, next) => {
   next();
 });
 
-// Determine the root directory (works on both local and Vercel)
-const ROOT_DIR = process.cwd();
 
-// Serve static assets with proper MIME types
-app.use(express.static(ROOT_DIR, {
-  setHeaders: (res, filePath) => {
-    if (filePath.endsWith('.css')) {
-      res.setHeader('Content-Type', 'text/css; charset=utf-8');
-    } else if (filePath.endsWith('.js')) {
-      res.setHeader('Content-Type', 'application/javascript; charset=utf-8');
-    }
+// Determine the root directory - try multiple locations for Vercel compatibility
+// Serve static CSS, JS, and other files by reading them directly (works in Vercel serverless)
+app.get(/\.(css|js|json)$/, (req, res, next) => {
+  const filePath = path.join(__dirname, req.path);
+  
+  // Security: prevent directory traversal
+  const normalized = path.normalize(filePath);
+  if (!normalized.startsWith(path.normalize(__dirname))) {
+    return res.status(403).send('Forbidden');
   }
-}));
+  
+  // Check if file exists
+  if (!fs.existsSync(filePath)) {
+    return next();
+  }
+  
+  // Set content type based on file extension
+  if (req.path.endsWith('.css')) {
+    res.setHeader('Content-Type', 'text/css; charset=utf-8');
+  } else if (req.path.endsWith('.js')) {
+    res.setHeader('Content-Type', 'application/javascript; charset=utf-8');
+  } else if (req.path.endsWith('.json')) {
+    res.setHeader('Content-Type', 'application/json');
+  }
+  
+  res.sendFile(filePath);
+});
 
-// Catch-all route to serve index.html for root and unmatched paths (for SPA routing and Vercel compatibility)
+// Catch-all route to serve index.html for root and unmatched paths
 app.get('/', (req, res) => {
-  res.sendFile(path.join(ROOT_DIR, 'index.html'));
+  res.sendFile(path.join(__dirname, 'index.html'));
 });
 
 // Helper to call Google Places Web Services
