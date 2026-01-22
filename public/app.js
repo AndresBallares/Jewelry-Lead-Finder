@@ -62,6 +62,10 @@ function searchNearby(location){
     console.log('nearby response', data);
     if(data.status !== 'OK' || !data.results || data.results.length===0){
       document.getElementById('places-list').innerHTML = '<p>No jewelry stores found.</p>';
+      const resultsTitle = document.querySelector('.results h2');
+      if (resultsTitle) {
+        resultsTitle.textContent = '(0) Stores';
+      }
       return;
     }
     renderPlaces(data.results);
@@ -72,6 +76,12 @@ function renderPlaces(places){
   const list = document.getElementById('places-list');
   list.innerHTML = '';
   const bounds = L.latLngBounds();
+  
+  // Update the h2 to show the count
+  const resultsTitle = document.querySelector('.results h2');
+  if (resultsTitle) {
+    resultsTitle.textContent = `(${places.length}) Stores`;
+  }
 
   places.forEach(place => {
     const card = document.createElement('div'); card.className = 'place-card';
