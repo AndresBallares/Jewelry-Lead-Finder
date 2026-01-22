@@ -83,6 +83,7 @@ function renderPlaces(places){
   
   // Update the h2 to show the count
   const resultsTitle = document.querySelector('.results h2');
+  console.log('Updating title with count:', places.length);
   if (resultsTitle) {
     resultsTitle.textContent = `(${places.length}) Stores`;
   }
